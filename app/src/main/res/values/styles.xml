@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+
+    <style name="MenuBotton" parent="@style/Widget.AppCompat.Button.Colored">
+        <item name="android:paddingLeft"> 80dp</item>
+        <item name="android:paddingRight">80dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">65dp</item>
+    </style>
+
+    <style name="MuestraBotton" parent="@style/Widget.AppCompat.Button.Colored">
+        <item name="android:paddingLeft">25dp</item>
+        <item name="android:paddingRight">25dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="LabelTextv" parent="@style/TextAppearance.AppCompat.Medium">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+</resources>
