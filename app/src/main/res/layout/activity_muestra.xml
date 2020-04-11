@@ -5,10 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/newMuestraActivity">
 
     <LinearLayout
-
+        android:id="@+id/newMuestraLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MuestraActivity"
@@ -44,6 +45,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="193dp"
                 android:layout_height="188dp"
+                android:tag="imgDefault"
                 app:srcCompat="@drawable/ic_photo"
                 tools:layout_editor_absoluteX="109dp"
                 tools:layout_editor_absoluteY="126dp"

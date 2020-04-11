@@ -1,5 +1,6 @@
 package geoanalysis.geocollect
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
@@ -11,10 +12,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btnLogin.setOnClickListener{
-            val intent = Intent(this, MenuActivity::class.java)
-            startActivity(intent);
+        val preferences = getSharedPreferences("general", Context.MODE_PRIVATE )
+        val session = preferences.getBoolean("sesion_activa", false)
+        if(session){
+            goToMenu()
         }
+        btnLogin.setOnClickListener{
+            createSesionReference()
+            goToMenu()
+        }
+    }
+
+    private fun goToMenu(){
+        val intent = Intent(this, MenuActivity::class.java)
+        startActivity(intent);
+        finish()
+    }
+
+    private fun createSesionReference(){
+        val preferences = getSharedPreferences("general", Context.MODE_PRIVATE )
+        val editor = preferences.edit()
+        editor.putBoolean("sesion_activa", true)
+        editor.apply()
     }
 
 

@@ -7,6 +7,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -16,8 +17,11 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
+import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import com.google.android.gms.location.*
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_muestra.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,7 +47,42 @@ class MuestraActivity : AppCompatActivity() {
         btnCamera_CLICK()
         btnGaleria_CLICK()
         btnGPS_CLICK()
+        btnPublicar.setOnClickListener(){
+
+            when{
+                imageView.getTag().toString() == "imgDefault" -> {
+                    Snackbar.make(newMuestraActivity,
+                        "Debes establecer una imagen para continuar", Snackbar.LENGTH_SHORT).show()
+                }
+                etDate.text.toString().isEmpty()->{
+                    Snackbar.make(newMuestraActivity,
+                        "La fecha esta vacia", Snackbar.LENGTH_SHORT).show()
+                }
+                etGPS.text.toString().isEmpty()->{
+                    Snackbar.make(newMuestraActivity,
+                        "Debes Ingresar una Ubicacion GPS", Snackbar.LENGTH_SHORT).show()
+                }
+                else->{
+                    newMuestraLinearLayout.visibility = View.GONE
+                }
+            }
+        }
     }
+
+    //Pregunta si deverdad desea salir
+    override fun onBackPressed() {
+        val dialog = AlertDialog.Builder(this)
+        dialog.setMessage("Seguro que desea Salir. Si sale se perderan los datos ingresados")
+        dialog.setPositiveButton("Salir"){_, _ ->
+            finish()
+        }
+        dialog.setNegativeButton("No Salir"){dialog, _ ->
+            dialog.dismiss()
+        }
+        dialog.setCancelable(false)
+        dialog.show()
+    }
+
 
     //al dar click en abrir galeria
     private fun btnGaleria_CLICK(){
@@ -165,9 +204,11 @@ class MuestraActivity : AppCompatActivity() {
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_GALERIA){
             imageView.setImageURI(data?.data)
             imageView.rotation
+            imageView.tag = "anyName"
         }
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_CAMERA){
             imageView.setImageURI(foto)
+            imageView.tag = "anyName"
         }
     }
 
@@ -199,4 +240,6 @@ class MuestraActivity : AppCompatActivity() {
         }
     }
 
+
 }
+
