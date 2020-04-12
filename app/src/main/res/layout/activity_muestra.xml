@@ -9,13 +9,14 @@
     android:id="@+id/newMuestraActivity">
 
     <LinearLayout
-        android:id="@+id/newMuestraLinearLayout"
+
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MuestraActivity"
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:background="@drawable/bg_gradient"
+        android:id="@+id/newMuestraLinearLayout"
         android:padding="18dp">
 
         <LinearLayout
@@ -45,7 +46,6 @@
                 android:id="@+id/imageView"
                 android:layout_width="193dp"
                 android:layout_height="188dp"
-                android:tag="imgDefault"
                 app:srcCompat="@drawable/ic_photo"
                 tools:layout_editor_absoluteX="109dp"
                 tools:layout_editor_absoluteY="126dp"
@@ -57,12 +57,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_horizontal"
-            >
+                >
                 <Button
                     android:id="@+id/btnGalery"
                     style="@style/MuestraBotton"
                     android:text="   GALERIA"
                     android:drawableLeft="@drawable/ic_galery"
+                    android:background="@drawable/borde_redondo2"
 
                     />
                 <Button
@@ -70,74 +71,71 @@
                     style="@style/MuestraBotton"
                     android:text="   CAMARA"
                     android:drawableLeft="@drawable/ic_camera_alt_black_24dp"
+                    android:background="@drawable/borde_redondo2"
                     />
 
             </LinearLayout>
         </LinearLayout>
 
-       <LinearLayout
-           android:layout_width="match_parent"
-           android:layout_height="wrap_content"
-           android:orientation="vertical"
-           android:layout_marginTop="10dp"
-           >
-           <TextView
-               android:text="Fecha y Hora"
-               style="@style/LabelTextv"
-               />
-           <EditText
-               android:id="@+id/etDate"
-               android:textColor="@color/white"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            >
+            <TextView
+                android:text="Fecha y Hora"
+                style="@style/LabelTextv"
+                />
+            <EditText
+                android:id="@+id/etDate"
+                android:textColor="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
 
-           <TextView
-               android:text="Posicion Geografica (lat/lon)"
-               style="@style/LabelTextv"
-               />
-           <EditText
-               android:id="@+id/etGPS"
-               android:textColor="@color/white"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               />
-           <Button
-               android:id="@+id/btnGPS"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:paddingLeft="100dp"
-               android:paddingRight="110dp"
-               style="@style/Widget.AppCompat.Button.Colored"
-               android:text="USAR GPS"
-               android:drawableLeft="@drawable/ic_place"
-               />
+            <TextView
+                android:text="Posicion Geografica (lat/lon)"
+                style="@style/LabelTextv"
+                />
+            <EditText
+                android:id="@+id/etGPS"
+                android:textColor="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+            <Button
+                android:id="@+id/btnGPS"
+                style="@style/MuestraBotton"
+                android:layout_gravity="center_horizontal"
+                android:text="  USAR GPS"
+                android:drawableLeft="@drawable/ic_place"
+                android:background="@drawable/borde_redondo2"
+                />
 
-           <TextView
-               android:text="Observacion"
-               style="@style/LabelTextv"
-               />
-           <EditText
-               android:id="@+id/etObservacion"
-               android:textColor="@color/white"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="12dp"
-               />
-           <Button
-               android:id="@+id/btnPublicar"
-               android:layout_marginTop="10dp"
-               android:paddingLeft="10dp"
-               android:paddingRight="10dp"
-               android:layout_gravity="center_horizontal"
-               style="@style/Widget.AppCompat.Button.Colored"
-               android:text="  SUBIR MUESTRA"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:drawableLeft="@drawable/ic_publish"
-               />
-
-       </LinearLayout>
+            <TextView
+                android:text="Observacion"
+                style="@style/LabelTextv"
+                />
+            <EditText
+                android:id="@+id/etObservacion"
+                android:textColor="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                />
+            <Button
+                android:id="@+id/btnPublicar"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="center_horizontal"
+                android:text="SUBIR MUESTRA"
+                style="@style/MenuBotton"
+                android:background="@drawable/border_edondo"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/colorAccent"
+                />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

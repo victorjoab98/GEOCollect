@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
+    android:gravity="center_vertical"
     android:padding="18dp"
     android:background="@drawable/bg_gradient"
     tools:context=".MenuActivity">
@@ -15,9 +15,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="38dp"
+        android:paddingTop="35dp"
         android:gravity="center_horizontal"
-        android:text="@string/app_name"
+        android:text="BIENVENIDO"
         android:textColor="@color/white"
         android:textSize="25sp"
         />
@@ -25,31 +25,44 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="40dp"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
         android:padding="12dp"
         >
 
         <Button
             android:id="@+id/btnNewMuestra"
-            android:drawableLeft="@drawable/ic_add_box"
-            android:text=" TOMAR NUEVA MUESTRA"
+            android:drawableTop="@drawable/ic_add_box"
+            android:text="\nNueva\nMuestra"
             style="@style/MenuBotton"
+            android:background="@drawable/forma_cuadrado"
             />
+
         <Button
             android:id="@+id/btnshowMuestras"
-            android:drawableLeft="@drawable/ic_publish"
-            android:text=" Ver Muestras Publicadas"
+            android:drawableTop="@drawable/ic_publish"
+            android:text="\nVer\nMuestras"
             style="@style/MenuBotton"
+            android:background="@drawable/forma_cuadrado"
             />
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:drawableLeft="@drawable/ic_power_off"
-            android:text=" CERRAR SESION"
-            style="@style/MenuBotton"
-            />
-
-
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:text="   CERRAR SESION"
+        style="@style/MenuBotton"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@drawable/border_edondo"
+        android:drawableLeft="@drawable/ic_power_off"
+        android:backgroundTint="@color/colorAccent"
+
+        />
+
+   
+
+
+
 </LinearLayout>

@@ -7,7 +7,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -18,7 +17,6 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
@@ -43,6 +41,7 @@ class MuestraActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
         val currentDate = sdf.format(Date())
         etDate.setText(currentDate)
+        imageView.setTag("imgDefault")
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         btnCamera_CLICK()
         btnGaleria_CLICK()

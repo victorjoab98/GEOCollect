@@ -9,11 +9,12 @@
     </style>
 
 
-    <style name="MenuBotton" parent="@style/Widget.AppCompat.Button.Colored">
-        <item name="android:paddingLeft"> 80dp</item>
-        <item name="android:paddingRight">80dp</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">65dp</item>
+    <style name="MenuBotton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/gris</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_marginTop">18dp</item>
     </style>
 
     <style name="MuestraBotton" parent="@style/Widget.AppCompat.Button.Colored">
