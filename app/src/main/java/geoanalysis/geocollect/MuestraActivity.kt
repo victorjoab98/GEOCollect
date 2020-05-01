@@ -1,6 +1,7 @@
 package geoanalysis.geocollect
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
@@ -11,16 +12,27 @@ import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.AuthFailureError
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_muestra.*
+import kotlinx.android.synthetic.main.activity_newmuestra.*
+import kotlinx.android.synthetic.main.activity_resume.*
+import org.json.JSONException
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,16 +41,18 @@ class MuestraActivity : AppCompatActivity() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     lateinit var locationRequest: LocationRequest
     lateinit var locationCallback: LocationCallback
+    private var requestQueue: RequestQueue? = null
 
     private val REQUEST_GALERIA = 1001
     private val REQUEST_CAMERA = 1002
     private val REQUEST_GPS = 1003
+    private var existEtiqueta: Int = 2
     var foto: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_muestra)
-        val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
+        val sdf = SimpleDateFormat("yyyy/M/dd")
         val currentDate = sdf.format(Date())
         etDate.setText(currentDate)
         imageView.setTag("imgDefault")
@@ -46,26 +60,49 @@ class MuestraActivity : AppCompatActivity() {
         btnCamera_CLICK()
         btnGaleria_CLICK()
         btnGPS_CLICK()
-        btnPublicar.setOnClickListener(){
+        btnEnviarMuestra_CLICK()
 
+        btnHecho.setOnClickListener(){
             when{
                 imageView.getTag().toString() == "imgDefault" -> {
-                    Snackbar.make(newMuestraActivity,
+                    Snackbar.make(newMuestraLinearLayout,
                         "Debes establecer una imagen para continuar", Snackbar.LENGTH_SHORT).show()
                 }
                 etDate.text.toString().isEmpty()->{
-                    Snackbar.make(newMuestraActivity,
+                    Snackbar.make(newMuestraLinearLayout,
                         "La fecha esta vacia", Snackbar.LENGTH_SHORT).show()
                 }
                 etGPS.text.toString().isEmpty()->{
-                    Snackbar.make(newMuestraActivity,
-                        "Debes Ingresar una Ubicacion GPS", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(newMuestraLinearLayout,
+                        "Debes Ingresar una", Snackbar.LENGTH_SHORT).show()
                 }
                 else->{
-                    newMuestraLinearLayout.visibility = View.GONE
+                    /*newMuestraLinearLayout.visibility = View.GONE
+                   lyResume.visibility = View.VISIBLE*/
+                   // conexionJava.buscarEtiqueta("http://192.168.1.109/WebServicePHP/consultarEtiqueta.php?etiqueta=abc124")
+                    var etiqueta : String = buscarEtiqueta()
+                    mostrarResumen(etiqueta)
+                   // Toast.makeText(applicationContext, etiqueta.toString(), Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    //este metodo envia la muestra al servidor
+    private fun btnEnviarMuestra_CLICK(){
+        btnEnviarMuestra.setOnClickListener(){
+            insertMuestra()
+        }
+    }
+
+    private fun mostrarResumen(etiqueta:String){
+        tvConfirmarEtiqueta.text = etiqueta;
+        tvConfirmarFechayHora.text = etDate.text
+        tvConfirmarUbicacion.text = etGPS.text
+        tvConfirmarObservacion.text = etObservacion.text
+
+        newMuestraLinearLayout.visibility = View.GONE
+        lyResume.visibility = View.VISIBLE
     }
 
     //Pregunta si deverdad desea salir
@@ -165,6 +202,7 @@ class MuestraActivity : AppCompatActivity() {
     }
 
     //toma la Ubicacion GPS
+    @SuppressLint("SetTextI18n")
     private fun obtieneUbicacion(){
         fusedLocationProviderClient.lastLocation.
                 addOnSuccessListener {
@@ -231,14 +269,75 @@ class MuestraActivity : AppCompatActivity() {
             REQUEST_GPS -> {
                 if(grantResults.size > 0){
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                        Toast.makeText(applicationContext, "Se accedio al GPS ", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Se accedio al GPS ", Toast.LENGTH_SHORT).show()
                     else
-                        Toast.makeText(applicationContext, "No se puede acceder al GPS", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "No se puede acceder al GPS", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
 
+     private fun buscarEtiqueta(): String{
+         var etiqueta : String = getRandomString(6)
+        val stringRequest = object : StringRequest(Request.Method.GET, "http://192.168.5.103/WebServicePHP/consultarEtiqueta.php?etiqueta="+etiqueta,
+            Response.Listener { response->
+                try {
+                    Toast.makeText(this, "Guarde la Etiqueta de la Muestra ", Toast.LENGTH_SHORT).show()
+                    etiqueta = getRandomString(6)
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                }
+        }, Response.ErrorListener {existEtiqueta=0}){}
+
+        if (requestQueue == null) {
+            requestQueue = Volley.newRequestQueue(this)
+        }
+        requestQueue?.add(stringRequest)
+
+         return etiqueta
+    }
+
+    private fun getRandomString(length: Int) : String {
+        val allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXTZ123456789"
+        return (1..length)
+            .map { allowedChars.random() }
+            .joinToString("")
+    }
+
+
+
+    private fun insertMuestra() {
+        val stringRequest = object : StringRequest(Request.Method.POST,
+            "http://192.168.5.103/WebServicePHP/insertarMuestra.php",
+            Response.Listener { response ->
+                try {
+                    Toast.makeText(this, "Se ha ingresado una nueva muestra", Toast.LENGTH_SHORT)
+                        .show()
+                } catch (e: Exception) {
+
+                }
+            }, Response.ErrorListener {  Toast.makeText(this, "Error al ingresar nueva muestra", Toast.LENGTH_SHORT).show() }){
+
+            @Throws(AuthFailureError::class)
+            override fun getParams(): Map<String, String> {
+                val params = HashMap<String, String>()
+                params["etiqueta"] = tvConfirmarEtiqueta.text.toString()
+                params["fecha"] = tvConfirmarFechayHora.text.toString()
+                params["ubicacion"] = tvConfirmarUbicacion.text.toString()
+                params["imagen"] = "imgCel"
+                params["observacion"] = tvConfirmarObservacion.text.toString()
+
+                return params
+            }
+        }
+
+        if (requestQueue == null) {
+            requestQueue = Volley.newRequestQueue(this)
+        }
+        requestQueue?.add(stringRequest)
+    }
 }
+
+
 
