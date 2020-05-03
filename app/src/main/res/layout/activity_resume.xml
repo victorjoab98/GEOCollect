@@ -103,6 +103,15 @@
                 style="@style/MuestraBotton"
                 android:text="Enviar Muestra"/>
 
+            <ProgressBar
+                android:id="@+id/progress_circularResume"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:max="100"
+                android:visibility="invisible"
+                android:progress="0"
+                />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

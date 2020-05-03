@@ -17,7 +17,7 @@ import org.json.JSONObject;
 public class conexionJava {
     private static RequestQueue requestQueue;
     private static Context ctx;}
-
+    //String imagen = getStringImagen(bitmap);
 
 
 /*

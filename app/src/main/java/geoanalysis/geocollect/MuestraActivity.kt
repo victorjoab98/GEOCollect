@@ -4,10 +4,12 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -16,23 +18,22 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Base64
 import android.view.View
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_newmuestra.*
 import kotlinx.android.synthetic.main.activity_resume.*
-import org.json.JSONException
-import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -42,7 +43,8 @@ class MuestraActivity : AppCompatActivity() {
     lateinit var locationRequest: LocationRequest
     lateinit var locationCallback: LocationCallback
     private var requestQueue: RequestQueue? = null
-
+    private var imageData: ByteArray? = null
+    var bitmap: Bitmap? = null
     private val REQUEST_GALERIA = 1001
     private val REQUEST_CAMERA = 1002
     private val REQUEST_GPS = 1003
@@ -52,7 +54,7 @@ class MuestraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_muestra)
-        val sdf = SimpleDateFormat("yyyy/M/dd")
+        val sdf = SimpleDateFormat("yyyy/M/dd hh:mm:ss")
         val currentDate = sdf.format(Date())
         etDate.setText(currentDate)
         imageView.setTag("imgDefault")
@@ -77,12 +79,8 @@ class MuestraActivity : AppCompatActivity() {
                         "Debes Ingresar una", Snackbar.LENGTH_SHORT).show()
                 }
                 else->{
-                    /*newMuestraLinearLayout.visibility = View.GONE
-                   lyResume.visibility = View.VISIBLE*/
-                   // conexionJava.buscarEtiqueta("http://192.168.1.109/WebServicePHP/consultarEtiqueta.php?etiqueta=abc124")
                     var etiqueta : String = buscarEtiqueta()
                     mostrarResumen(etiqueta)
-                   // Toast.makeText(applicationContext, etiqueta.toString(), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -239,12 +237,19 @@ class MuestraActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_GALERIA){
-            imageView.setImageURI(data?.data)
+            val filePath = data!!.data
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+          //  imageView.setImageURI(data?.data)
+            imageView.setImageBitmap(bitmap)
+          //  createImageData(data?.data)
             imageView.rotation
             imageView.tag = "anyName"
         }
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_CAMERA){
-            imageView.setImageURI(foto)
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), foto);
+         //   imageView.setImageURI(foto)
+           // foto?.let { createImageData(it) }
+            imageView.setImageBitmap(bitmap)
             imageView.tag = "anyName"
         }
     }
@@ -280,7 +285,7 @@ class MuestraActivity : AppCompatActivity() {
 
      private fun buscarEtiqueta(): String{
          var etiqueta : String = getRandomString(6)
-        val stringRequest = object : StringRequest(Request.Method.GET, "http://192.168.5.103/WebServicePHP/consultarEtiqueta.php?etiqueta="+etiqueta,
+        val stringRequest = object : StringRequest(Request.Method.GET, "http://192.168.1.109/WebServicePHP/consultarEtiqueta.php?etiqueta="+etiqueta,
             Response.Listener { response->
                 try {
                     Toast.makeText(this, "Guarde la Etiqueta de la Muestra ", Toast.LENGTH_SHORT).show()
@@ -305,29 +310,31 @@ class MuestraActivity : AppCompatActivity() {
             .joinToString("")
     }
 
-
-
     private fun insertMuestra() {
+       // imageData?: return
+        progress_circularResume.visibility = View.VISIBLE
         val stringRequest = object : StringRequest(Request.Method.POST,
             "http://192.168.5.103/WebServicePHP/insertarMuestra.php",
             Response.Listener { response ->
                 try {
                     Toast.makeText(this, "Se ha ingresado una nueva muestra", Toast.LENGTH_SHORT)
                         .show()
+                    progress_circularResume.visibility = View.INVISIBLE
                 } catch (e: Exception) {
-
+                    Toast.makeText(this, "Ha ocurrido un error al insertar la muestra", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }, Response.ErrorListener {  Toast.makeText(this, "Error al ingresar nueva muestra", Toast.LENGTH_SHORT).show() }){
 
             @Throws(AuthFailureError::class)
             override fun getParams(): Map<String, String> {
                 val params = HashMap<String, String>()
+                val img = getStringImagen(bitmap)
                 params["etiqueta"] = tvConfirmarEtiqueta.text.toString()
                 params["fecha"] = tvConfirmarFechayHora.text.toString()
                 params["ubicacion"] = tvConfirmarUbicacion.text.toString()
-                params["imagen"] = "imgCel"
+                params["imagen"] = img
                 params["observacion"] = tvConfirmarObservacion.text.toString()
-
                 return params
             }
         }
@@ -337,6 +344,24 @@ class MuestraActivity : AppCompatActivity() {
         }
         requestQueue?.add(stringRequest)
     }
+
+
+    fun getStringImagen(bmp: Bitmap?): String {
+        val baos = ByteArrayOutputStream()
+        bmp?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val imageBytes: ByteArray = baos.toByteArray()
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT)
+    }
+
+
+    @Throws(IOException::class)
+    private fun createImageData(uri: Uri?) {
+        val inputStream = uri?.let { contentResolver.openInputStream(it) }
+        inputStream?.buffered()?.use {
+            imageData = it.readBytes()
+        }
+    }
+
 }
 
 
