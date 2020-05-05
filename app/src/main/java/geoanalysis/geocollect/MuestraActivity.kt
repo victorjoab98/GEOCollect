@@ -36,6 +36,9 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+/*Esta clase maneja el layout de newMuestra en el que se insertan los datos para una nueva muestra
+* asi como tambien el layout de resume en el cual muesta los datos ingresados y tiene un boton para
+* enviar la muestra*/
 
 class MuestraActivity : AppCompatActivity() {
 
@@ -43,27 +46,34 @@ class MuestraActivity : AppCompatActivity() {
     lateinit var locationRequest: LocationRequest
     lateinit var locationCallback: LocationCallback
     private var requestQueue: RequestQueue? = null
-    private var imageData: ByteArray? = null
-    var bitmap: Bitmap? = null
+    private var bitmap: Bitmap? = null
+    private var foto: Uri? = null
+
     private val REQUEST_GALERIA = 1001
     private val REQUEST_CAMERA = 1002
     private val REQUEST_GPS = 1003
     private var existEtiqueta: Int = 2
-    var foto: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_muestra)
+
+        //Se coloca la fecha y hora en etDate del layout newMuestra
         val sdf = SimpleDateFormat("yyyy/M/dd hh:mm:ss")
         val currentDate = sdf.format(Date())
         etDate.setText(currentDate)
-        imageView.setTag("imgDefault")
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        imageView.setTag("imgDefault")//un tag para la imagen inicial del layout
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)//para el cliente proveedor del GPS
+
+        //los metodos relacionados con los botones de los layouts
         btnCamera_CLICK()
         btnGaleria_CLICK()
         btnGPS_CLICK()
         btnEnviarMuestra_CLICK()
 
+        //Metodo para el boton Hecho
+        // Se revisa que los campos tengan contenido y se hace un resumen de la informacion dada
         btnHecho.setOnClickListener(){
             when{
                 imageView.getTag().toString() == "imgDefault" -> {
@@ -79,31 +89,32 @@ class MuestraActivity : AppCompatActivity() {
                         "Debes Ingresar una", Snackbar.LENGTH_SHORT).show()
                 }
                 else->{
-                    var etiqueta : String = buscarEtiqueta()
-                    mostrarResumen(etiqueta)
+                    var etiqueta : String = buscarEtiqueta()//recibe una etiqueta que no este repetida en la bd
+                    mostrarResumen(etiqueta)//muestra el siguiente layout mostrando un resumen de los datos ingresados
                 }
             }
         }
     }
 
-    //este metodo envia la muestra al servidor
+    //metodo cuando se de click a ENVIAR
     private fun btnEnviarMuestra_CLICK(){
         btnEnviarMuestra.setOnClickListener(){
             insertMuestra()
         }
     }
 
+    //Coloca datos del primer layout en el segundo para mostrar un resumen
     private fun mostrarResumen(etiqueta:String){
         tvConfirmarEtiqueta.text = etiqueta;
         tvConfirmarFechayHora.text = etDate.text
         tvConfirmarUbicacion.text = etGPS.text
         tvConfirmarObservacion.text = etObservacion.text
-
+        //oculta el layout de ingreso para mostrar el de resumen
         newMuestraLinearLayout.visibility = View.GONE
         lyResume.visibility = View.VISIBLE
     }
 
-    //Pregunta si deverdad desea salir
+    //Pregunta si de verdad desea salir del enviar muestra
     override fun onBackPressed() {
         val dialog = AlertDialog.Builder(this)
         dialog.setMessage("Seguro que desea Salir. Si sale se perderan los datos ingresados")
@@ -124,7 +135,7 @@ class MuestraActivity : AppCompatActivity() {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){//ver la version de android
                 if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
                     val permisosArchivos = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    requestPermissions(permisosArchivos,REQUEST_GALERIA)
+                    requestPermissions(permisosArchivos,REQUEST_GALERIA)//si no tiene permiso para leer, pide
                 }else
                     abreGaleria()
             }else
@@ -132,10 +143,18 @@ class MuestraActivity : AppCompatActivity() {
         }
     }
 
+    //abre la galeria de fotos
+    private fun abreGaleria(){
+        val intentGaleria = Intent(Intent.ACTION_PICK)
+        intentGaleria.type = "image/*"
+        startActivityForResult(intentGaleria,REQUEST_GALERIA)
+    }
+
     //al dar click en Usar Camara
     private fun btnCamera_CLICK(){
         btnCamera.setOnClickListener(){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                //Si no tiene permisos para la Camara y escribir datos los pide
                 if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED
                     || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
                     val permisosCamara = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -145,6 +164,16 @@ class MuestraActivity : AppCompatActivity() {
             }else
                 abreCamara()
         }
+    }
+
+    //abre la camara del celeular
+    private fun abreCamara(){
+        val value = ContentValues()
+        value.put(MediaStore.Images.Media.TITLE, "Nueva Imagen")
+        foto = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, value)
+        val camaraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        camaraIntent.putExtra(MediaStore.EXTRA_OUTPUT, foto)
+        startActivityForResult(camaraIntent, REQUEST_CAMERA)
     }
 
     //al dar click en Usar GPS
@@ -167,7 +196,7 @@ class MuestraActivity : AppCompatActivity() {
         }
     }
 
-    //no permite usar el boton gps si esta desactivada la ubicacion
+    //Avisa que la "ubicacion" esta desactivada
     private fun alertaUbicacion(){
         val dialog = AlertDialog.Builder(this)
         dialog.setMessage("La ubicacion esta desactivada. Habilite la ubicación para usar la localizcion GPS")
@@ -182,30 +211,13 @@ class MuestraActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    //abre la galeria de fotos
-    private fun abreGaleria(){
-        val intentGaleria = Intent(Intent.ACTION_PICK)
-        intentGaleria.type = "image/*"
-        startActivityForResult(intentGaleria,REQUEST_GALERIA)
-    }
-
-    //abre la camara del celeular
-    private fun abreCamara(){
-        val value = ContentValues()
-        value.put(MediaStore.Images.Media.TITLE, "Nueva Imagen")
-        foto = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, value)
-        val camaraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        camaraIntent.putExtra(MediaStore.EXTRA_OUTPUT, foto)
-        startActivityForResult(camaraIntent, REQUEST_CAMERA)
-    }
-
     //toma la Ubicacion GPS
     @SuppressLint("SetTextI18n")
     private fun obtieneUbicacion(){
         fusedLocationProviderClient.lastLocation.
                 addOnSuccessListener {
                     location: Location? ->
-                        if(location!= null){
+                        if(location!= null){//solo si ya se conoce la ubicacion
                             etGPS.setText(location.latitude.toString()+"/"+location.longitude.toString())
                         }else{
                             buildLocationRequest()
@@ -213,18 +225,9 @@ class MuestraActivity : AppCompatActivity() {
                             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper())
                         }
                 }
-
     }
 
-    private fun buildLocationCallBack(){
-        locationCallback = object :LocationCallback(){
-            override fun onLocationResult(p0: LocationResult?) {
-                var location = p0!!.locations.get(p0!!.locations.size - 1)
-                etGPS.setText(location.latitude.toString()+"/"+location.longitude.toString())
-            }
-        }
-    }
-
+    //es un metodo para que define el Request de ubicacion
     private fun buildLocationRequest(){
         locationRequest = LocationRequest()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -233,28 +236,36 @@ class MuestraActivity : AppCompatActivity() {
         locationRequest.smallestDisplacement = 10f
     }
 
-    //callbacks de las operaciones
+    //obtiene la nueva ultima ubicacion conocida
+    private fun buildLocationCallBack(){
+        locationCallback = object :LocationCallback(){
+            override fun onLocationResult(p0: LocationResult?) {
+                var location = p0!!.locations.get(p0!!.locations.size - 1)
+                etGPS.setText(location.latitude.toString()+"/"+location.longitude.toString())//la coloca en etGPS del layout
+            }
+        }
+    }
+
+    //callbacks de las operaciones para poner la foto en imageView
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        //si se uso la galeria
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_GALERIA){
             val filePath = data!!.data
             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
-          //  imageView.setImageURI(data?.data)
             imageView.setImageBitmap(bitmap)
-          //  createImageData(data?.data)
             imageView.rotation
             imageView.tag = "anyName"
         }
+        //si se uso la camara
         if(resultCode == Activity.RESULT_OK && requestCode==REQUEST_CAMERA){
             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), foto);
-         //   imageView.setImageURI(foto)
-           // foto?.let { createImageData(it) }
             imageView.setImageBitmap(bitmap)
             imageView.tag = "anyName"
         }
     }
 
-    //callbacks de los permisos
+    //callbacks de los permisos para camara, galeria y GPS
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -282,7 +293,7 @@ class MuestraActivity : AppCompatActivity() {
         }
     }
 
-
+    //Hace una consulta para ver si ya existe la etiqueta que devolvio getRandomString()
      private fun buscarEtiqueta(): String{
          var etiqueta : String = getRandomString(6)
         val stringRequest = object : StringRequest(Request.Method.GET, "http://192.168.1.109/WebServicePHP/consultarEtiqueta.php?etiqueta="+etiqueta,
@@ -303,6 +314,7 @@ class MuestraActivity : AppCompatActivity() {
          return etiqueta
     }
 
+    //genera una cadena alfanumerica para la etiqueta de la muestra
     private fun getRandomString(length: Int) : String {
         val allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXTZ123456789"
         return (1..length)
@@ -310,13 +322,15 @@ class MuestraActivity : AppCompatActivity() {
             .joinToString("")
     }
 
+    //Sube la muestra a la base de datos
     private fun insertMuestra() {
-       // imageData?: return
-        progress_circularResume.visibility = View.VISIBLE
+        progress_circularResume.visibility = View.VISIBLE //una recurso que se muestra mientras este metodo esta operando
+        //se define un StrinRequest con el tipo de Metodo, la ruta y las acciones correspondientes
         val stringRequest = object : StringRequest(Request.Method.POST,
-            "http://192.168.5.103/WebServicePHP/insertarMuestra.php",
+            "http://192.168.1.109/WebServicePHP/insertarMuestra.php",//ruta del web service insertarMuestra
             Response.Listener { response ->
                 try {
+                    //si se logra enviar muestraun mensaje de exito y oculta el recurso progress
                     Toast.makeText(this, "Se ha ingresado una nueva muestra", Toast.LENGTH_SHORT)
                         .show()
                     progress_circularResume.visibility = View.INVISIBLE
@@ -324,12 +338,13 @@ class MuestraActivity : AppCompatActivity() {
                     Toast.makeText(this, "Ha ocurrido un error al insertar la muestra", Toast.LENGTH_SHORT)
                         .show()
                 }
-            }, Response.ErrorListener {  Toast.makeText(this, "Error al ingresar nueva muestra", Toast.LENGTH_SHORT).show() }){
+            },Response.ErrorListener{Toast.makeText(this, "Error al ingresar nueva muestra", Toast.LENGTH_SHORT).show()}){
 
+            //se encapsulan los parametros que se enviaran al web service
             @Throws(AuthFailureError::class)
             override fun getParams(): Map<String, String> {
                 val params = HashMap<String, String>()
-                val img = getStringImagen(bitmap)
+                val img = getStringImagen(bitmap)//se recibe la imagen como una cadena
                 params["etiqueta"] = tvConfirmarEtiqueta.text.toString()
                 params["fecha"] = tvConfirmarFechayHora.text.toString()
                 params["ubicacion"] = tvConfirmarUbicacion.text.toString()
@@ -338,28 +353,19 @@ class MuestraActivity : AppCompatActivity() {
                 return params
             }
         }
-
         if (requestQueue == null) {
-            requestQueue = Volley.newRequestQueue(this)
+            requestQueue = Volley.newRequestQueue(this)//se crea una nueva request
         }
-        requestQueue?.add(stringRequest)
+        requestQueue?.add(stringRequest)//se le asigna el StringRequest
+
     }
 
-
+    //convierte la imagen Bitmap en un string que se pueda enviar al servidor
     fun getStringImagen(bmp: Bitmap?): String {
         val baos = ByteArrayOutputStream()
         bmp?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
         val imageBytes: ByteArray = baos.toByteArray()
         return Base64.encodeToString(imageBytes, Base64.DEFAULT)
-    }
-
-
-    @Throws(IOException::class)
-    private fun createImageData(uri: Uri?) {
-        val inputStream = uri?.let { contentResolver.openInputStream(it) }
-        inputStream?.buffered()?.use {
-            imageData = it.readBytes()
-        }
     }
 
 }
